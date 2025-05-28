@@ -13,6 +13,6 @@
     docker compose up --build -d
     ```
 4. Run application:
-```shell
-composer run dev
-```
+    ```shell
+    php artisan serve
+    ```
