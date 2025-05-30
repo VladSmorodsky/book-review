@@ -21,27 +21,29 @@ class ReviewFactory extends Factory
             'review' => fake()->paragraph,
             'rating' => fake()->numberBetween(1, 5),
             'created_at' => fake()->dateTimeBetween('-2 years'),
-            'updated_at' => fake()->dateTimeBetween('created_at', 'now'),
+            'updated_at' => function (array $attributes) {
+                return fake()->dateTimeBetween($attributes['created_at'], 'now');
+            }
         ];
     }
 
     public function good(): Factory
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'rating' => fake()->numberBetween(4, 5),
         ]);
     }
 
     public function average(): Factory
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'rating' => fake()->numberBetween(2, 5),
         ]);
     }
 
     public function bad(): Factory
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'rating' => fake()->numberBetween(1, 3),
         ]);
     }
