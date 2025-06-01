@@ -6,3 +6,6 @@ migrate_refresh:
 
 tinker:
 	php artisan tinker
+
+run:
+	php artisan serve
