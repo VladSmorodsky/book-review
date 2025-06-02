@@ -2,11 +2,16 @@
 
 @section('content')
     <h1 class="mb-10 text-2xl">Books</h1>
-    <form action=""></form>
+    @include('shared.book_search_form')
+
+    <div class="filter-container mb-4 flex">
+        @include('shared.filters')
+    </div>
+
     <ul>
         @forelse ($books as $book)
             <li class="mb-4">
-                @include('books/book_item', ['book' => $book])
+                @include('shared.book_item', ['book' => $book])
             </li>
         @empty
             <li class="mb-4">
