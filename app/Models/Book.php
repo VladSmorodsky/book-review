@@ -26,15 +26,25 @@ class Book extends Model
         return $query->where('title', 'like', '%' . $title . '%');
     }
 
+    public function scopeWithReviewsCount(Builder $query, ?string $from = null, ?string $to = null): Builder|QueryBuilder
+    {
+        return $query->withCount(['reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)]);
+    }
+
+    public function scopeWithAvgRating(Builder $query, ?string $from = null, ?string $to = null): Builder|QueryBuilder
+    {
+        return $query->withAvg(['reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)], 'rating');
+    }
+
     public function scopePopular(Builder $query, ?string $from = null, ?string $to = null): Builder|QueryBuilder
     {
-        return $query->withCount(['reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)])
+        return $query->withReviewsCount($from, $to)
             ->orderBy('reviews_count', 'desc');
     }
 
     public function scopeHighestRated(Builder $query, ?string $from = null, ?string $to = null): Builder|QueryBuilder
     {
-        return $query->withAvg(['reviews' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)], 'rating')
+        return $query->withAvgRating($from, $to)
             ->orderBy('reviews_avg_rating', 'desc');
     }
 
@@ -69,6 +79,12 @@ class Book extends Model
         return $query->highestRated(now()->subMonth(6), now())
             ->popular(now()->subMonth(6), now())
             ->minReviews(self::REVIEWS_COUNT_BY_SIX_MONTHS);
+    }
+
+    protected static function booted()
+    {
+        static::updated(fn(Book $book) => cache()->forget('book:' . $book->book_id)); // TODO: refactor cache logic
+        static::deleted(fn(Book $book) => cache()->forget('book:' . $book->book_id));
     }
 
     private function dateRangeFilter(Builder $query, ?string $from = null, ?string $to = Null)
