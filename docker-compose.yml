@@ -1,16 +1,4 @@
 services:
-#    db:
-#        image: postgres:17
-#        container_name: book_review_postgres
-#        environment:
-#            POSTGRES_DB: ${DB_DATABASE}
-#            POSTGRES_USER: ${DB_USERNAME}
-#            POSTGRES_PASSWORD: ${DB_PASSWORD}
-#        ports:
-#            - "5432:5432"
-#        volumes:
-#            - pgdata:/var/lib/postgresql/data
-
     mysqldb:
         image: mysql:9.3
         container_name: my-mysql
@@ -24,6 +12,11 @@ services:
             - "3307:3306"
         volumes:
             - mysql_data:/var/lib/mysql
+
+    redis:
+        image: redis:8.0
+        ports:
+            - '6379:6379'
 
 volumes:
     mysql_data:

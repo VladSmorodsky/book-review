@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class BookController extends Controller
 {
+    private const CACHE_BOOKS_KEY = 'books';
+    private const CACHE_SINGLE_BOOK_KEY = 'book';
+    private const CACHE_BOOKS_EXPIRATION = 3600;
+
     /**
      * Display a listing of the resource.
      */
@@ -27,7 +32,13 @@ class BookController extends Controller
             default => $books->latest(),
         };
 
-        $books = $books->get();
+        $cacheKey = self::CACHE_BOOKS_KEY . ':' . $filter . ':' . $title; //TODO: move cache key generating into separate service
+
+        $books = cache()->remember(
+            $cacheKey,
+            self::CACHE_BOOKS_EXPIRATION,
+            fn() => $books->get()
+        );
 
         return view('books.index', ['books' => $books]);
     }
@@ -53,13 +64,15 @@ class BookController extends Controller
      */
     public function show(Book $book)
     {
+        $cacheKey = self::CACHE_SINGLE_BOOK_KEY . ':' . $book->id;
+
+        $book = cache()->remember($cacheKey, self::CACHE_BOOKS_EXPIRATION, fn() => $book->load([
+            'reviews' => fn($query) => $query->latest(),
+        ]));
+
         return view(
             'books.show',
-            [
-                'book' => $book->load([
-                    'reviews' => fn($query) => $query->latest(),
-                ])
-            ]
+            ['book' => $book]
         );
     }
 
