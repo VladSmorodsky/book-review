@@ -9,3 +9,6 @@ tinker:
 
 run:
 	php artisan serve
+
+route_list:
+	php artisan route:list

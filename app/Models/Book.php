@@ -87,7 +87,7 @@ class Book extends Model
         static::deleted(fn(Book $book) => cache()->forget('book:' . $book->book_id));
     }
 
-    private function dateRangeFilter(Builder $query, ?string $from = null, ?string $to = Null)
+    private function dateRangeFilter(Builder $query, ?string $from = null, ?string $to = Null): void
     {
         if ($from && !$to) {
             $query->where('created_at', '>=', $from);
