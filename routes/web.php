@@ -12,4 +12,7 @@ Route::resource('books', BookController::class)->only(['index', 'show']);
 
 Route::resource('books.reviews', ReviewController::class)
     ->scoped(['review' => 'book'])
-    ->only(['create', 'store']);
+    ->only(['create']);
+
+Route::post('books/{book}/reviews', [ReviewController::class, 'store'])
+    ->middleware(['throttle:reviews'])->name('books.reviews.store');
