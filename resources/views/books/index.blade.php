@@ -21,5 +21,11 @@
                 </div>
             </li>
         @endforelse
+
+        @if($books->count())
+            <div>
+                {{ $books->links() }}
+            </div>
+        @endif
     </ul>
 @endsection

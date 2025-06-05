@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class BookController extends Controller
 {
     private const CACHE_BOOKS_KEY = 'books';
     private const CACHE_SINGLE_BOOK_KEY = 'book';
-    private const CACHE_BOOKS_EXPIRATION = 3600;
+    private const CACHE_REVIEWS_KEY = 'reviews';
+    private const CACHE_EXPIRATION = 3600;
 
     /**
      * Display a listing of the resource.
@@ -19,6 +19,7 @@ class BookController extends Controller
     {
         $title = $request->input('title');
         $filter = $request->input('filter', '');
+        $page = $request->input('page', 1);
 
         $books = Book::when(
             $title,
@@ -32,12 +33,12 @@ class BookController extends Controller
             default => $books->latest()->withAvgRating()->withReviewsCount(),
         };
 
-        $cacheKey = self::CACHE_BOOKS_KEY . ':' . $filter . ':' . $title; //TODO: move cache key generating into separate service
+        $cacheKey = self::CACHE_BOOKS_KEY . ':' . $filter . ':' . $title . ':' . $page; //TODO: move cache key generating into separate service
 
         $books = cache()->remember(
             $cacheKey,
-            self::CACHE_BOOKS_EXPIRATION,
-            fn() => $books->get()
+            self::CACHE_EXPIRATION,
+            fn() => $books->paginate()
         );
 
         return view('books.index', ['books' => $books]);
@@ -62,21 +63,26 @@ class BookController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
-        $cacheKey = self::CACHE_SINGLE_BOOK_KEY . ':' . $id;
+        $page = $request->input('page', 1);
+        $bookCacheKey = self::CACHE_SINGLE_BOOK_KEY . ':' . $id;
+        $reviewsCacheKey = self::CACHE_REVIEWS_KEY . ':' . $page;
 
         $book = cache()->remember(
-            $cacheKey,
-            self::CACHE_BOOKS_EXPIRATION,
-            fn() => Book::with([
-                'reviews' => fn($query) => $query->latest(),
-            ])->withAvgRating()->withReviewsCount()->findOrFail($id)
+            $bookCacheKey,
+            self::CACHE_EXPIRATION,
+            fn() => Book::withAvgRating()->withReviewsCount()->findOrFail($id)
         );
 
+        $reviews = cache()->remember(
+            $reviewsCacheKey,
+            self::CACHE_EXPIRATION,
+            fn() => $book->reviews()->latest()->paginate()
+        );
         return view(
             'books.show',
-            ['book' => $book]
+            ['book' => $book, 'reviews' => $reviews]
         );
     }
 
