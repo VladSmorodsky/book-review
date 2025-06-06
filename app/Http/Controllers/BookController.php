@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class BookController extends Controller
@@ -15,7 +16,7 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $title = $request->input('title');
         $filter = $request->input('filter', '');
@@ -63,7 +64,7 @@ class BookController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): View
     {
         $page = $request->input('page', 1);
         $bookCacheKey = self::CACHE_SINGLE_BOOK_KEY . ':' . $id;

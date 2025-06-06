@@ -12,3 +12,6 @@ run:
 
 route_list:
 	php artisan route:list
+
+cache_clear:
+	php artisan cache:clear
