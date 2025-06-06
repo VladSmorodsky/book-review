@@ -13,6 +13,7 @@ Implemented features:
 - Filtering: by popular books (reviews count) and by highest rated books for one month, six months and all time
 - Caching: implemented request caching for better performance
 - Rate limit: added rate limit to send books reviews
+- Pagination: added pagination for books and reviews pages
 
 ## Project Setup
 
