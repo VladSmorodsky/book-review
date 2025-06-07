@@ -30,11 +30,7 @@ Implemented features:
     - `DB_PASSWORD`: database password
     - `DB_ROOT_PASSWORD`: database password for root user
     - `REDIS_CLIENT`: Redis client driver (phpredis, predis)
-3. Run docker compose up command:
+3. Run Laravel Sail:
     ```shell
-    docker compose up --build -d
-    ```
-4. Run application:
-    ```shell
-    php artisan serve
+    make run
     ```
