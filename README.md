@@ -5,6 +5,7 @@ Also, you can find a necessary book using searching by title.
 
 Tech stack that used for project:
 - Laravel
+- Laravel Sail
 - MySQL
 - Redis
 
