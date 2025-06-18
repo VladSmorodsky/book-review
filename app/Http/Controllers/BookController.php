@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Services\CacheService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    private const CACHE_BOOKS_KEY = 'books';
-    private const CACHE_SINGLE_BOOK_KEY = 'book';
-    private const CACHE_REVIEWS_KEY = 'reviews';
-    private const CACHE_EXPIRATION = 3600;
+    public function __construct(private readonly CacheService $cacheService)
+    {
+    }
 
     /**
      * Display a listing of the resource.
@@ -34,11 +34,9 @@ class BookController extends Controller
             default => $books->latest()->withAvgRating()->withReviewsCount(),
         };
 
-        $cacheKey = self::CACHE_BOOKS_KEY . ':' . $filter . ':' . $title . ':' . $page; //TODO: move cache key generating into separate service
-
         $books = cache()->remember(
-            $cacheKey,
-            self::CACHE_EXPIRATION,
+            $this->cacheService->getBooksKey($title, $filter, $page),
+            CacheService::CACHE_EXPIRATION,
             fn() => $books->paginate()
         );
 
@@ -67,18 +65,16 @@ class BookController extends Controller
     public function show(Request $request, int $id): View
     {
         $page = $request->input('page', 1);
-        $bookCacheKey = self::CACHE_SINGLE_BOOK_KEY . ':' . $id;
-        $reviewsCacheKey = self::CACHE_REVIEWS_KEY . ':' . $page;
 
         $book = cache()->remember(
-            $bookCacheKey,
-            self::CACHE_EXPIRATION,
+            $this->cacheService->getSingleBooksKey($id),
+            CacheService::CACHE_EXPIRATION,
             fn() => Book::withAvgRating()->withReviewsCount()->findOrFail($id)
         );
 
         $reviews = cache()->remember(
-            $reviewsCacheKey,
-            self::CACHE_EXPIRATION,
+            $this->cacheService->getReviewsKey($id, $page),
+            CacheService::CACHE_EXPIRATION,
             fn() => $book->reviews()->latest()->paginate()
         );
         return view(

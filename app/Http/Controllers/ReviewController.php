@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreReviewRequest;
 use App\Models\Book;
+use App\Services\BookReviewService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
+    public function __construct(private BookReviewService $bookReviewService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -18,7 +26,7 @@ class ReviewController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Book $book)
+    public function create(Book $book): View
     {
         return view('books.reviews.create', ['book' => $book]);
     }
@@ -26,14 +34,9 @@ class ReviewController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Book $book)
+    public function store(StoreReviewRequest $request, Book $book): RedirectResponse
     {
-        $data = $request->validate([
-            'review' => 'required|min:15',
-            'rating' => 'required|integer|min:1|max:5',
-        ]);
-
-        $book->reviews()->create($data);
+        $this->bookReviewService->createReview($book, $request->review, $request->rating);
 
         return redirect()->route('books.show', ['book' => $book]);
     }
